@@ -1,5 +1,6 @@
 import io
 import os.path
+import json  # Add this import for reading JSON config file
 
 from aleph.sdk import AuthenticatedAlephHttpClient
 from aleph.sdk.chains.common import get_fallback_private_key
@@ -24,9 +25,18 @@ app.add_middleware(
 
 video_path = "video.mp4"
 
+# Load private key from config file
+def load_config():
+    with open("config.json", "r") as f:
+        config = json.load(f)
+    return config
+
+config = load_config()
+private_key = config["private_key"]
+
 
 async def download_video(hash):
-    pkey = get_fallback_private_key()
+    pkey = private_key  # Use the loaded private key
 
     account = ETHAccount(private_key=pkey)
 
@@ -50,7 +60,7 @@ async def get_hls(file: str):
 
 @app.get("/video/{hash}/{video}")
 async def get_video(hash: str, video: str):
-    pkey = get_fallback_private_key()
+    pkey = private_key  # Use the loaded private key
 
     account = ETHAccount(private_key=pkey)
 
@@ -60,4 +70,3 @@ async def get_video(hash: str, video: str):
     file_object = io.BytesIO(file_content)
 
     return StreamingResponse(file_object, media_type="video/MP2T")
-
