@@ -1,34 +1,48 @@
-from flask import Flask, request, jsonify
+
 from datetime import datetime
 
-from flask_cors import cross_origin
 
-app = Flask(__name__)
-cid_storage = {}
-
-
-@app.route("/store_cid/<owner>", methods=["POST"])
-def store_cid(owner):
-    key = request.args.get("key")
-    if not key:
-        return jsonify({"error": "Missing 'key' query parameter"}), 400
-
-    timestamp = datetime.now().timestamp()  # Get current Unix timestamp
-    full_key = f"{timestamp}-{owner}"
-    cid_storage[full_key] = key
-    return jsonify({"message": "CID stored successfully", "full_key": full_key, "cid": key}), 200
-
-
-@app.route("/get_cid/<owner>")
-@cross_origin()
-def get_cids(owner):
-    #owner_cids = [f"{int(key.split('-')[0])}:{cid}" for key, cid in cid_storage.items() if key.endswith(f"-{owner}")]
-    owner_cids = [f"{float(key.split('-')[0])}:{cid}" for key, cid in cid_storage.items() if key.endswith(f"-{owner}")]
-    if owner_cids:
-        return jsonify({"owner": owner, "cids": owner_cids}), 200
-    else:
-        return jsonify({"message": f"No CID found for owner '{owner}'"}), 404
-
-
+"""
 if __name__ == "__main__":
     app.run()
+"""
+
+import json
+import os
+from os import path
+
+
+class CID_Storage:
+    def __init__(self): #initiate the class
+         return
+
+    def add_cid(self, owner: str, cid: str): # add a new cid to the json file of the owner
+        if not path.exists(f'{path.curdir}/alljson'):
+            os.mkdir(f'{path.curdir}/alljson') 
+        filename = f'{path.curdir}/alljson/{owner}.json'
+        timestamp = datetime.now().timestamp()  # Get current Unix timestamp
+
+        # Check if file exists
+        if path.isfile(filename) is False:#create new json with name of the owner if the file not exist (means streamm just started)
+                    with open(filename, 'w') as json_file:json.dump([],json_file, indent=4,  separators=(',',': '))
+
+        with open(filename, 'r') as fp:
+            cid_storage = json.load(fp)
+        cid_storage.append({ #add new cid to the json with his timestamp
+            "timestamp": timestamp,
+            "cid": cid,
+            })
+        with open(filename, 'w') as json_file:json.dump(cid_storage, json_file, indent=4,  separators=(',',': '))
+        return
+
+    def push_cid(self, owner: str):#do this when stream ends
+        filename = f'{path.curdir}/alljson/{owner}.json'
+        # Check if file exists
+        if path.isfile(filename) is False: raise Exception("File not found")
+
+        # Push CID to Aleph
+
+        #add agreate location to all  steam in aleph for this owner
+
+        os.remove(filename)#remove json form the disk if was push to aleph
+        return
