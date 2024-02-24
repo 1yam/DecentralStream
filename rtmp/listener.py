@@ -69,7 +69,7 @@ async def convert_to_hls(input_video, hash):
     # Exécuter la commande FFmpeg
     subprocess.run(command)
 
-    return output_playlist
+    return { "file_name": f'{file_name}.m3u8', "file_path": output_playlist }
 
 
 async def search_and_upload():
@@ -84,10 +84,18 @@ async def search_and_upload():
 
             hls_file = await convert_to_hls(filename, result['hash'])
 
-            if count == 0:
-                hls.initialize_playlist(hls.get_target_duration(hls_file))
+            # if count == 0:
+            #     hls.initialize_playlist(hls.get_target_duration(hls_file))
+            #
+            # hls.add_segment_to_playlist(hls_file)
+            account = "test"
+            data = aiohttp.FormData()
+            with open(hls_file['file_path'], 'rb') as f:
+                data.add_field('segment', f, filename=hls_file['file_name'])
+                async with aiohttp.ClientSession() as session:
+                    async with session.post(f"http://localhost:8000/hls/{account}/store-segment", data=data) as resp:
+                        await resp.release()
 
-            hls.add_segment_to_playlist(hls_file)
 
             # name = "StreamTest"
             # async with aiohttp.ClientSession() as session:
