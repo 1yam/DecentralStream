@@ -23,18 +23,6 @@ def send_aggregate_aleph(key : str, dict, channel):
     return create_aggregate(account, key, dict , channel)
 
 
-class CID_Live:
-     def __init__(self):
-          return
-     
-     def start_stream(self, owner: str):
-        streamer_status = {owner: True}
-        send_aggregate_aleph(account, "Streamer",{owner:True}, 'Streamer' )
-
-     def stop_stream(self, owner: str):
-        streamer_status = {owner: False}
-        send_aggregate_aleph(account, "Streamer",{owner:True}, 'Streamer')
-
 
 class CID_Storage:
     def __init__(self): #initiate the class
