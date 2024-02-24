@@ -40,7 +40,7 @@ async def wait_for_file_creation(filename):
 
 async def convert_to_hls(input_video, hash):
     # Créer le dossier de sortie s'il n'existe pas
-    output_folder = 'outputs'
+    output_folder = 'hls-outputs'
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
@@ -75,7 +75,7 @@ async def convert_to_hls(input_video, hash):
 async def search_and_upload():
     count = 0
     while True:
-        filename = f'{count:03d}.ts'  # Format filename with leading zeros
+        filename = f'outputs/{count:03d}.ts'  # Format filename with leading zeros
         await wait_for_file_creation(filename)  # Attendre que le fichier soit créé
         with open(filename, 'rb') as file:
             chunk = file.read()
@@ -89,10 +89,10 @@ async def search_and_upload():
 
             hls.add_segment_to_playlist(hls_file)
 
-            name = "StreamTest"
-            async with aiohttp.ClientSession() as session:
-                async with session.post(f"http://localhost:5000/store_cid/{name}?key={result['hash']}") as resp:
-                    await resp.release()
+            # name = "StreamTest"
+            # async with aiohttp.ClientSession() as session:
+            #     async with session.post(f"http://localhost:5000/store_cid/{name}?key={result['hash']}") as resp:
+            #         await resp.release()
 
             print(f"File '{filename}' uploaded to IPFS. IPFS Hash: {result['hash']}")
         except Exception as e:

@@ -1,0 +1,6 @@
+venv
+outputs/*
+!outputs/.gitkeep
+
+hls-outputs/*
+!hls-outputs/.gitkeep
