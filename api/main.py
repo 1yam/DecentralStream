@@ -32,11 +32,10 @@ def load_config():
     return config
 
 config = load_config()
-private_key = config["private_key"]
 
 
 async def download_video(hash):
-    pkey = private_key  # Use the loaded private key
+    pkey = bytes.fromhex(config["private_key"])  # Use the loaded private key
 
     account = ETHAccount(private_key=pkey)
 
@@ -47,6 +46,11 @@ async def download_video(hash):
         with open(file_path, "wb") as f:
             f.write(file_content)
 
+@app.get("/public")
+async def get_public():
+    pkey = bytes.fromhex(config["private_key"])
+    account = ETHAccount(private_key=pkey)
+    return account.get_public_key()
 
 @app.get("/files/{file}")
 async def get_hls(file: str):
@@ -60,7 +64,7 @@ async def get_hls(file: str):
 
 @app.get("/video/{hash}/{video}")
 async def get_video(hash: str, video: str):
-    pkey = private_key  # Use the loaded private key
+    pkey = bytes.fromhex(config["private_key"])  # Use the loaded private key
 
     account = ETHAccount(private_key=pkey)
 
@@ -70,3 +74,4 @@ async def get_video(hash: str, video: str):
     file_object = io.BytesIO(file_content)
 
     return StreamingResponse(file_object, media_type="video/MP2T")
+
