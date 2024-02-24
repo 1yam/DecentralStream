@@ -24,7 +24,7 @@ class RTMP2SocketController(SimpleRTMPController):
         publishing_name = message.publishing_name
         prefix = os.path.join(self.output_directory, f"{publishing_name}")
         session.state = RemoteProcessFLVWriter()
-        logger.debug(f"output to {prefix}.mp4")
+        logger.debug(f"outputs to {prefix}.mp4")
         await session.state.initialize(
             command=f"ffmpeg -y -i pipe:0 -c:v copy -c:a copy -f segment -segment_time 5  -segment_format mpegts {prefix}%03d.ts",
             stdout_log=f"{prefix}.stdout.log",
@@ -105,7 +105,7 @@ class SimpleServer(SimpleRTMPServer):
 
 
 async def main():
-    current_dir = os.path.dirname(os.path.abspath(__file__))
+    current_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs")
     server = SimpleServer(output_directory=current_dir)
     await server.create(host="0.0.0.0", port=1935)
     await server.start()

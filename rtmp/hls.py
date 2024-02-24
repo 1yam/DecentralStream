@@ -1,3 +1,4 @@
+import os
 import re
 
 
@@ -9,7 +10,10 @@ def initialize_playlist(target_duration):
 #EXT-X-DISCONTINUITY
     """
 
-    with open('../outputs/playlist.m3u8', 'w') as f:
+    if os.path.exists('./hls-outputs/playlist.m3u8'):
+        os.remove('./hls-outputs/playlist.m3u8')
+
+    with open('./hls-outputs/playlist.m3u8', 'w') as f:
         f.write(file)
 
 
@@ -37,6 +41,6 @@ def add_segment_to_playlist(segment_file):
     match_url = re.search(pattern_url, segment)
 
     if match_extinf and match_url:
-        with open('../outputs/playlist.m3u8', 'a') as f:
+        with open('./hls-outputs/playlist.m3u8', 'a') as f:
             f.write(f"#EXTINF:{match_extinf.group(1)},\n")
             f.write(f"{match_url.group()}\n")
