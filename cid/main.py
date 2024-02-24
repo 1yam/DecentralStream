@@ -1,6 +1,6 @@
 
 from datetime import datetime
-
+from aleph_client.synchronous import create_aggregate
 
 """
 if __name__ == "__main__":
@@ -10,6 +10,21 @@ if __name__ == "__main__":
 import json
 import os
 from os import path
+
+from aleph.sdk.chains.ethereum import ETHAccount
+
+def load_config():
+    with open("config.json", "r") as f:
+        config = json.load(f)
+    return config
+
+config = load_config()
+
+
+account = ETHAccount(private_key=bytes.fromhex(config["private_key"]))
+
+def send_aggregate_aleph(key : str, dict, channel):
+    return create_aggregate(account, key, channel)
 
 
 class CID_Storage:
