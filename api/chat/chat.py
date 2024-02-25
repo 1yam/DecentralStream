@@ -2,7 +2,19 @@ from fastapi import FastAPI, HTTPException, Request
 from datetime import datetime
 import json
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI()
+
+origins = ["*"]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # Load existing data from file if available
 try:
@@ -11,10 +23,12 @@ try:
 except FileNotFoundError:
     channels = {}
 
+
 # Function to save data to file
 def save_data():
     with open("chat_data.json", "w") as file:
         json.dump(channels, file)
+
 
 # Function to add message to a channel
 def add_message(channel, username, message):
@@ -23,6 +37,7 @@ def add_message(channel, username, message):
     timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     channels[channel].append({"timestamp": timestamp, "username": username, "message": message})
     save_data()
+
 
 # Route to post a message to a specific channel using JSON body
 @app.post('/post_message')
@@ -36,6 +51,7 @@ async def post_message(request: Request):
         return {"success": True}
     else:
         raise HTTPException(status_code=400, detail="Missing channel, username, or message")
+
 
 # Route to get messages from a specific channel
 @app.get('/get_messages/{channel}')
