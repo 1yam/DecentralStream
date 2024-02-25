@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 
 # Change to the listener loop directory
 cd ./rtmp
@@ -7,7 +7,7 @@ cd ./rtmp
 python3 -m venv venv
 
 # Activate the virtual environment
-. venv/bin/activate
+source venv/bin/activate
 
 # Install the required packages
 pip install -r requirements.txt

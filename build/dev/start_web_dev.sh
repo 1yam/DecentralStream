@@ -1,4 +1,4 @@
-#/bin/sh
+#!/bin/sh
 
 # Change to the web directory
 cd ./web
