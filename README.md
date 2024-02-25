@@ -22,14 +22,14 @@ This give multiple advantages:
 
 # Dependency
 Python 3.11:
-- Uvicorn===0.27.1
-- Fastapi===0.109.2
-- Aleph-sdk-python===0.9.0
-- Python-multipart===0.0.9
-- PyJWT===2.8.0
-- asyncio===3.4.3
-- logging===0.4.9.6
-- pyrtmp===0.3.0
-- aiohttp===3.9.3
+- Uvicorn===0.27.1 (pip install uvicorn)
+- Fastapi===0.109.2 (pip install fastapi)
+- Aleph-sdk-python===0.9.0 (pip install aleph-sdk-python)
+- Python-multipart===0.0.9 (pip install python-multipart)
+- PyJWT===2.8.0 (pip install PyJWT)
+- asyncio===3.4.3 (pip install asyncio)
+- logging===0.4.9.6 (pip install logging)
+- pyrtmp===0.3.0 (pip install pyrtmp)
+- aiohttp===3.9.3 (pip install aiohttp)
 
   
