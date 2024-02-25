@@ -2,6 +2,12 @@ from flask import Flask, request, jsonify
 from datetime import datetime
 import json
 
+###
+### This API is not secure.
+### This is the show possibility of feature using chat
+### To Do: authentifcations with wallet
+###
+
 app = Flask(__name__)
 
 # Load existing data from file if available
