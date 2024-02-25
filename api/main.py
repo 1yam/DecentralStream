@@ -3,10 +3,13 @@ import os.path
 import re
 from typing import Annotated
 
+import json
+import uvicorn
 from aleph.sdk import AuthenticatedAlephHttpClient
 from aleph.sdk.chains.common import get_fallback_private_key
 from aleph.sdk.chains.ethereum import ETHAccount
 from aleph.sdk.conf import settings
+from aleph_client.synchronous import fetch_aggregate
 
 from fastapi import FastAPI, Form, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
@@ -158,6 +161,33 @@ async def get_video(hash: str, video: str):
 
     return StreamingResponse(file_object, media_type="video/MP2T")
 
+
+def load_config():
+    with open("config.json", "r") as f:
+        config = json.load(f)
+    return config
+
+config = load_config()
+account = ETHAccount(private_key=bytes.fromhex(config["private_key"]))
+
+@app.get("/streamStatusOn/{owner}")
+def start_stream(self, owner: str):
+    streamer_status = {owner: True}
+    send_aggregate_aleph(account, "Streamer",{owner:True}, 'Streamer' )
+
+@app.get("/streamStatusOff/{owner}")
+def stop_stream(self, owner: str):
+    streamer_status = {owner: False}
+    send_aggregate_aleph(account, "Streamer",{owner:True}, 'Streamer')
+
+
+@app.get("/steams")
+async def get_active_stream():
+    all_streamer=fetch_aggregate(account,"Streamer")
+    online_streamer = []
+    for key, value in all_streamer.items():
+        if value == True:
+            online_streamer.append(key)
 
 @app.post("/accounts/{account}/generate-stream-key")
 async def generate_stream_key(account: str):
