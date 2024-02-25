@@ -1,4 +1,5 @@
-asyncio===3.4.3
-logging===0.4.9.6
-pyrtmp===0.3.0
-aiohttp===3.9.3
+asyncio
+logging
+pyrtmp
+aiohttp
+bitstring
