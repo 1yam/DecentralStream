@@ -1,6 +1,6 @@
 # How to setup DecentralStream:
 
-## Install
+## Install OBS
 OBS installation: https://obsproject.com/fr
 
 ## configure OBS for DecentralStream:
