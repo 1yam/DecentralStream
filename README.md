@@ -1,6 +1,13 @@
-## DecentralStream 
+## What is DecentralStream 
 
-DecentralSteam Aim to allow user to live stream using IPFS network instead of using a server to send video
+DecentralSteam is A new way to allow user to live stream using IPFS network instead of using server to send video
+
+This give multiple advantages:
+- It solve principal issue of live stream **bandwidth usage**: User can simply ask themself for moment of live and never ask for video on server
+- Every moment of the stream is publicly store on IPFS that mean you can't censor anymore
+- Anyone who want to save extract from live stream can simply pin this moment on IPFS:
+  - Viewer can pay to store rediffusion not necessarily host or streamer
+  - IPFS allow two people to save same moment without creating anycopy of the video (really usefull if lot a people create almost same clips)
 
 
 # Requirement
