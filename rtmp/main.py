@@ -54,12 +54,21 @@ class RTMP2SocketController(SimpleRTMPController):
 
 class RemoteProcessFLVWriter:
     def __init__(self):
+        self.stream_key = json.loads(open('config.json').read())['stream_key']
+
         self.proc = None
         self.stdout = None
         self.stderr = None
         self.writer = FLVWriter()
 
     async def initialize(self, command: str, stdout_log: str, stderr_log: str):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"http://localhost:8000/start-stream?stream_key={self.stream_key}") as resp:
+                await resp.release()
+                if resp.status != 200:
+                    raise Exception('An error are occured while starting stream. Exiting...')
+
         self.proc = await asyncio.create_subprocess_shell(
             command,
             stdin=asyncio.subprocess.PIPE,
@@ -87,6 +96,13 @@ class RemoteProcessFLVWriter:
         self.proc.stdin.write(buffer)
 
     async def close(self):
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"http://localhost:8000/stop-stream?stream_key={self.stream_key}") as resp:
+                await resp.release()
+                if resp.status != 200:
+                    raise Exception('An error are occured while stopping stream. Exiting...')
+
         await self.proc.stdin.drain()
         self.proc.stdin.close()
         await self.proc.wait()
@@ -108,13 +124,12 @@ class SimpleServer(SimpleRTMPServer):
 
 async def main():
     stream_key = json.loads(open('config.json').read())['stream_key']
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                    f"http://localhost:8000/accounts/verfify-stream-key?stream_key={stream_key}") as resp:
-                await resp.release()
-    except Exception as e:
-        raise Exception('Bad stream_key. Exiting...')
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                f"http://localhost:8000/accounts/verfify-stream-key?stream_key={stream_key}") as resp:
+            await resp.release()
+            if resp.status != 200:
+                raise Exception('Bad stream_key. Exiting...')
 
     current_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs")
     server = SimpleServer(output_directory=current_dir)
