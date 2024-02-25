@@ -13,4 +13,4 @@ source venv/bin/activate
 pip install -r requirements.txt
 
 # Run the RTMP server
-python3 main.py
+python3 rtmp.py

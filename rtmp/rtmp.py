@@ -1,28 +1,21 @@
 from __future__ import annotations
 
 import asyncio
-import json
 import logging
 import os
 from asyncio import StreamReader
 
-import aiohttp
 from pyrtmp import StreamClosedException
 from pyrtmp.flv import FLVMediaType, FLVWriter
 from pyrtmp.rtmp import RTMPProtocol, SimpleRTMPController, SimpleRTMPServer
 from pyrtmp.session_manager import SessionManager
 
+import api_call
+import config
+
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
-def load_config():
-    with open("config.json", "r") as f:
-        config = json.load(f)
-    return config
-
-
-config = load_config()
 
 
 class RTMP2SocketController(SimpleRTMPController):
@@ -68,12 +61,7 @@ class RemoteProcessFLVWriter:
         self.writer = FLVWriter()
 
     async def initialize(self, command: str, stdout_log: str, stderr_log: str):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                    f"{config['api_url']}/start-stream?stream_key={config['stream_key']}") as resp:
-                await resp.release()
-                if resp.status != 200:
-                    raise Exception('An error are occured while starting stream. Exiting...')
+        await api_call.start_stream()
 
         self.proc = await asyncio.create_subprocess_shell(
             command,
@@ -102,12 +90,7 @@ class RemoteProcessFLVWriter:
         self.proc.stdin.write(buffer)
 
     async def close(self):
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                    f"{config['api_url']}/stop-stream?stream_key={config['stream_key']}") as resp:
-                await resp.release()
-                if resp.status != 200:
-                    raise Exception('An error are occured while stopping stream. Exiting...')
+        await api_call.stop_stream()
 
         await self.proc.stdin.drain()
         self.proc.stdin.close()
@@ -129,14 +112,9 @@ class SimpleServer(SimpleRTMPServer):
 
 
 async def main():
-    async with aiohttp.ClientSession() as session:
-        async with session.get(
-                f"{config['api_url']}/accounts/verfify-stream-key?stream_key={config['stream_key']}") as resp:
-            await resp.release()
-            if resp.status != 200:
-                raise Exception('Bad stream_key. Exiting...')
+    await api_call.verify_stream_key()
 
-    current_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs")
+    current_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), config.Config.OUTPUT_DIR)
     server = SimpleServer(output_directory=current_dir)
     await server.create(host="0.0.0.0", port=1234)
     await server.start()
