@@ -18,5 +18,6 @@ OBS installation: https://obsproject.com/fr
 - Add your streamer key to local Video Treatment
   ![image](https://github.com/1yam/HackatonPoc/assets/77409325/24b1b699-aa91-45f2-9a40-2f6e2ffde3b5)
 
+![image](https://github.com/1yam/HackatonPoc/assets/77409325/be257651-bbf4-401b-90de-56d4d1677e8c)
 
   **Now you can start your Stream only using OBS**
