@@ -16,6 +16,14 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
+def load_config():
+    with open("config.json", "r") as f:
+        config = json.load(f)
+    return config
+
+
+config = load_config()
+
 
 class RTMP2SocketController(SimpleRTMPController):
     def __init__(self, output_directory: str):
@@ -54,8 +62,6 @@ class RTMP2SocketController(SimpleRTMPController):
 
 class RemoteProcessFLVWriter:
     def __init__(self):
-        self.stream_key = json.loads(open('config.json').read())['stream_key']
-
         self.proc = None
         self.stdout = None
         self.stderr = None
@@ -64,7 +70,7 @@ class RemoteProcessFLVWriter:
     async def initialize(self, command: str, stdout_log: str, stderr_log: str):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"http://localhost:8000/start-stream?stream_key={self.stream_key}") as resp:
+                    f"{config['api_url']}/start-stream?stream_key={config['stream_key']}") as resp:
                 await resp.release()
                 if resp.status != 200:
                     raise Exception('An error are occured while starting stream. Exiting...')
@@ -98,7 +104,7 @@ class RemoteProcessFLVWriter:
     async def close(self):
         async with aiohttp.ClientSession() as session:
             async with session.get(
-                    f"http://localhost:8000/stop-stream?stream_key={self.stream_key}") as resp:
+                    f"{config['api_url']}/stop-stream?stream_key={config['stream_key']}") as resp:
                 await resp.release()
                 if resp.status != 200:
                     raise Exception('An error are occured while stopping stream. Exiting...')
@@ -123,10 +129,9 @@ class SimpleServer(SimpleRTMPServer):
 
 
 async def main():
-    stream_key = json.loads(open('config.json').read())['stream_key']
     async with aiohttp.ClientSession() as session:
         async with session.get(
-                f"http://localhost:8000/accounts/verfify-stream-key?stream_key={stream_key}") as resp:
+                f"{config['api_url']}/accounts/verfify-stream-key?stream_key={config['stream_key']}") as resp:
             await resp.release()
             if resp.status != 200:
                 raise Exception('Bad stream_key. Exiting...')

@@ -6,7 +6,13 @@ import asyncio
 import time
 import os
 
-import hls
+def load_config():
+    with open("config.json", "r") as f:
+        config = json.load(f)
+    return config
+
+
+config = load_config()
 
 
 async def upload_video(chunk):
@@ -52,7 +58,7 @@ async def convert_to_hls(input_video, hash):
     output_playlist = os.path.join(output_folder, f'{file_name}.m3u8')
 
     # URL de base pour les segments HLS
-    base_url = f"http://localhost:8000/video/{hash}/"
+    base_url = f"{config['api_url']}/video/{hash}/"
 
     command = [
         'ffmpeg',
@@ -89,12 +95,11 @@ async def search_and_upload():
             #     hls.initialize_playlist(hls.get_target_duration(hls_file))
             #
             # hls.add_segment_to_playlist(hls_file)
-            stream_key = json.loads(open('config.json').read())['stream_key']
             data = aiohttp.FormData()
             with open(hls_file['file_path'], 'rb') as f:
                 data.add_field('segment', f, filename=hls_file['file_name'])
                 async with aiohttp.ClientSession() as session:
-                    async with session.post(f"http://localhost:8000/hls/store-segment?stream_key={stream_key}",
+                    async with session.post(f"{config['api_url']}/hls/store-segment?stream_key={config['stream_key']}",
                                             data=data) as resp:
                         await resp.release()
 
@@ -113,7 +118,7 @@ async def main():
     stream_key = json.loads(open('config.json').read())['stream_key']
     async with aiohttp.ClientSession() as session:
         async with session.get(
-                f"http://localhost:8000/accounts/verfify-stream-key?stream_key={stream_key}") as resp:
+                f"{config['api_url']}/accounts/verfify-stream-key?stream_key={config['stream_key']}") as resp:
             await resp.release()
             if resp.status != 200:
                 raise Exception('Bad stream_key. Exiting...')
