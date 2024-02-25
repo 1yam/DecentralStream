@@ -15,7 +15,7 @@ This give multiple advantages:
  
  MetaMask wallet for authentification
 
- User don't need to install anythings to access the steam
+ User don't need to install anythings to access the stream
 
 
 
