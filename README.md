@@ -21,7 +21,7 @@ This give multiple advantages:
 
 
 # Dependency
-Python:
+Python 3.11:
 - Uvicorn===0.27.1
 - Fastapi===0.109.2
 - Aleph-sdk-python===0.9.0
