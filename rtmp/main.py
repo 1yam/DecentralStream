@@ -1,10 +1,12 @@
 from __future__ import annotations
 
 import asyncio
+import json
 import logging
 import os
 from asyncio import StreamReader
 
+import aiohttp
 from pyrtmp import StreamClosedException
 from pyrtmp.flv import FLVMediaType, FLVWriter
 from pyrtmp.rtmp import RTMPProtocol, SimpleRTMPController, SimpleRTMPServer
@@ -105,9 +107,18 @@ class SimpleServer(SimpleRTMPServer):
 
 
 async def main():
+    stream_key = json.loads(open('config.json').read())['stream_key']
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                    f"http://localhost:8000/accounts/verfify-stream-key?stream_key={stream_key}") as resp:
+                await resp.release()
+    except Exception as e:
+        raise Exception('Bad stream_key. Exiting...')
+
     current_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), "outputs")
     server = SimpleServer(output_directory=current_dir)
-    await server.create(host="0.0.0.0", port=1935)
+    await server.create(host="0.0.0.0", port=1234)
     await server.start()
     await server.wait_closed()
 
