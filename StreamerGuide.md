@@ -9,11 +9,8 @@ OBS installation: https://obsproject.com/fr
 
 ![alt text](https://github.com/1yam/HackatonPoc/blob/main/Images/DecentralStream-OBS-Config1.png)
 
+- Now Select this Server : rtmp://127.0.0.1:1935/live
 
-- Now Select this Server :
-
-- Connect Here to get your streamer key:
-
-- Enter your streamer key in OBS
+- Start local Video Treatment
 
   **Now you can start your Stream only using OBS**
