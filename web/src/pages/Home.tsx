@@ -2,8 +2,11 @@ import {Sidebar, Spinner} from "flowbite-react";
 import {useEffect, useState} from "react";
 import axios from "axios";
 import ReactPlayer from "react-player";
+import {Chat} from "../components/Chat";
+import {useAccountState} from "../stores/account";
 
 export default function Home() {
+  const accountState = useAccountState()
   const [streamersLoading, setStreamersLoading] = useState(false)
   const [streamers, setStreamers] = useState([])
 
@@ -68,7 +71,7 @@ export default function Home() {
               </Sidebar.ItemGroup>
             </Sidebar>
           </div>
-          <div className={'w-3/4'}>
+          <div className={'w-2/4'}>
             <div className="lg:col-span-12">
               {!selectedStreamer ? (
                 <p className={'text-center text-gray-500 dark:text-gray-400'}>Select a streamer to watch</p>
@@ -87,6 +90,13 @@ export default function Home() {
                     className="mt-4"
                   />
                 </>
+              )}
+            </div>
+          </div>
+          <div className={'w-1/4'}>
+            <div className="lg:col-span-12">
+              {(selectedStreamer) && (
+                <Chat streamer={selectedStreamer}/>
               )}
             </div>
           </div>

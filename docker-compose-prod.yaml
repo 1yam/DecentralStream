@@ -10,6 +10,7 @@ services:
       - 3000:3000
     environment:
         - REACT_APP_API_URL=YOUR_API_URL
+        - REACT_APP_CHAT_URL=YOUR_CHAT_URL
     networks:
       - backend
 
