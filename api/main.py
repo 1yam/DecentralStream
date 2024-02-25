@@ -13,6 +13,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from starlette.responses import Response, StreamingResponse
 
+import jwt
+
 app = FastAPI()
 
 origins = ["*"]
@@ -94,8 +96,18 @@ def generate_playlist(streams_path, segment_path):
     add_segment_to_playlist(playlist_path, segment_path)
 
 
-@app.post("/hls/{account}/store-segment")
-async def store_hls_segment(account: str, segment: UploadFile):
+@app.post("/hls/store-segment")
+async def store_hls_segment(segment: UploadFile, stream_key: str):
+    if not stream_key:
+        return Response(status_code=400)
+
+    try:
+        data = jwt.decode(stream_key, "secret", algorithms=["HS256"])
+    except Exception as e:
+        return Response(status_code=400, content=str(e))
+
+    account = data["account"]
+
     account_streams_dir = os.path.join("./streams", account)
     if not os.path.exists(account_streams_dir):
         os.makedirs(account_streams_dir)
@@ -145,3 +157,24 @@ async def get_video(hash: str, video: str):
     file_object = io.BytesIO(file_content)
 
     return StreamingResponse(file_object, media_type="video/MP2T")
+
+
+@app.post("/accounts/{account}/generate-stream-key")
+async def generate_stream_key(account: str):
+    data = {
+        "account": account,
+    }
+
+    stream_key = jwt.encode(data, "secret", algorithm="HS256")
+
+    return Response(content=stream_key, media_type="application/json")
+
+
+@app.get("/accounts/verfify-stream-key")
+async def verify_stream_key(stream_key: str):
+    try:
+        jwt.decode(stream_key, "secret", algorithms=["HS256"])
+    except Exception as e:
+        return Response(status_code=400, content=str(e))
+
+    return Response(content="ok", media_type="application/json")
