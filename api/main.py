@@ -1,20 +1,16 @@
 import io
 import os.path
 import re
-from typing import Annotated
 
 import json
-import uvicorn
-from aleph.sdk import AuthenticatedAlephHttpClient
+from aleph.sdk import AuthenticatedAlephHttpClient, AlephHttpClient
 from aleph.sdk.chains.common import get_fallback_private_key
 from aleph.sdk.chains.ethereum import ETHAccount
 from aleph.sdk.conf import settings
-from aleph_client.synchronous import fetch_aggregate
 
-from fastapi import FastAPI, Form, UploadFile
+from fastapi import FastAPI, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from starlette.responses import Response, StreamingResponse
+from fastapi.responses import JSONResponse, StreamingResponse, Response
 
 import jwt
 
@@ -30,7 +26,15 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-video_path = "video.mp4"
+
+def load_config():
+    with open("config.json", "r") as f:
+        config = json.load(f)
+    return config
+
+
+config = load_config()
+account = ETHAccount(private_key=bytes.fromhex(config["private_key"]))
 
 
 async def download_video(hash):
@@ -162,32 +166,67 @@ async def get_video(hash: str, video: str):
     return StreamingResponse(file_object, media_type="video/MP2T")
 
 
-def load_config():
-    with open("config.json", "r") as f:
-        config = json.load(f)
-    return config
+@app.get("/start-stream")
+async def start_stream(stream_key: str):
+    if not stream_key:
+        return Response(status_code=400)
 
-config = load_config()
-account = ETHAccount(private_key=bytes.fromhex(config["private_key"]))
+    try:
+        data = jwt.decode(stream_key, "secret", algorithms=["HS256"])
+    except Exception as e:
+        return Response(status_code=400, content=str(e))
 
-@app.get("/streamStatusOn/{owner}")
-def start_stream(self, owner: str):
+    owner = data["account"]
+
     streamer_status = {owner: True}
-    send_aggregate_aleph(account, "Streamer",{owner:True}, 'Streamer' )
+    async with AuthenticatedAlephHttpClient(account) as client:
+        await client.create_aggregate(
+            "Streamer",
+            streamer_status,
+            sync=True,
+        )
 
-@app.get("/streamStatusOff/{owner}")
-def stop_stream(self, owner: str):
+        return Response(status_code=200, content="ok")
+
+
+@app.get("/stop-stream")
+async def stop_stream(stream_key: str):
+    if not stream_key:
+        return Response(status_code=400)
+
+    try:
+        data = jwt.decode(stream_key, "secret", algorithms=["HS256"])
+    except Exception as e:
+        return Response(status_code=400, content=str(e))
+
+    owner = data["account"]
+
     streamer_status = {owner: False}
-    send_aggregate_aleph(account, "Streamer",{owner:True}, 'Streamer')
+    async with AuthenticatedAlephHttpClient(account) as client:
+        await client.create_aggregate(
+            "Streamer",
+            streamer_status,
+            sync=True,
+        )
+
+        return Response(status_code=200, content="ok")
 
 
-@app.get("/steams")
+@app.get("/streams")
 async def get_active_stream():
-    all_streamer=fetch_aggregate(account,"Streamer")
-    online_streamer = []
-    for key, value in all_streamer.items():
-        if value == True:
-            online_streamer.append(key)
+    async with AlephHttpClient() as client:
+        aggregate = await client.fetch_aggregate(
+            account.get_address(),
+            "Streamer",
+        )
+
+        online_streamer = []
+        for key, value in aggregate.items():
+            if value:
+                online_streamer.append(key)
+
+        return JSONResponse(content={"online_streamer": online_streamer}, media_type="application/json")
+
 
 @app.post("/accounts/{account}/generate-stream-key")
 async def generate_stream_key(account: str):
