@@ -1,3 +1,4 @@
+import json
 import subprocess
 
 import aiohttp
@@ -88,14 +89,14 @@ async def search_and_upload():
             #     hls.initialize_playlist(hls.get_target_duration(hls_file))
             #
             # hls.add_segment_to_playlist(hls_file)
-            account = "test"
+            stream_key = json.loads(open('config.json').read())['stream_key']
             data = aiohttp.FormData()
             with open(hls_file['file_path'], 'rb') as f:
                 data.add_field('segment', f, filename=hls_file['file_name'])
                 async with aiohttp.ClientSession() as session:
-                    async with session.post(f"http://localhost:8000/hls/{account}/store-segment", data=data) as resp:
+                    async with session.post(f"http://localhost:8000/hls/store-segment?stream_key={stream_key}",
+                                            data=data) as resp:
                         await resp.release()
-
 
             # name = "StreamTest"
             # async with aiohttp.ClientSession() as session:
@@ -109,6 +110,15 @@ async def search_and_upload():
 
 
 async def main():
+    stream_key = json.loads(open('config.json').read())['stream_key']
+    async with aiohttp.ClientSession() as session:
+        async with session.get(
+                f"http://localhost:8000/accounts/verfify-stream-key?stream_key={stream_key}") as resp:
+            await resp.release()
+            if resp.status != 200:
+                raise Exception('Bad stream_key. Exiting...')
+
+
     await search_and_upload()
 
 
