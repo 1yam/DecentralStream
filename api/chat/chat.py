@@ -1,8 +1,8 @@
-from flask import Flask, request, jsonify
+from fastapi import FastAPI, HTTPException, Request
 from datetime import datetime
 import json
 
-app = Flask(__name__)
+app = FastAPI()
 
 # Load existing data from file if available
 try:
@@ -25,25 +25,22 @@ def add_message(channel, username, message):
     save_data()
 
 # Route to post a message to a specific channel using JSON body
-@app.route('/post_message', methods=['POST'])
-def post_message():
-    data = request.json
+@app.post('/post_message')
+async def post_message(request: Request):
+    data = await request.json()
     if 'channel' in data and 'username' in data and 'message' in data:
         channel = data['channel']
         username = data['username']
         message = data['message']
         add_message(channel, username, message)
-        return jsonify({"success": True})
+        return {"success": True}
     else:
-        return jsonify({"error": "Missing channel, username, or message"}), 400
+        raise HTTPException(status_code=400, detail="Missing channel, username, or message")
 
 # Route to get messages from a specific channel
-@app.route('/get_messages/<channel>', methods=['GET'])
-def get_messages(channel):
+@app.get('/get_messages/{channel}')
+async def get_messages(channel: str):
     if channel in channels:
-        return jsonify(channels[channel])
+        return channels[channel]
     else:
-        return jsonify({"error": "Channel not found"}), 404
-
-if __name__ == '__main__':
-    app.run(debug=True)
+        raise HTTPException(status_code=404, detail="Channel not found")
