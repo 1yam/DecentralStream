@@ -23,7 +23,7 @@ export default function Home() {
   const selectedStreamerUrl = () => {
     if (!selectedStreamer) return ""
 
-    return `http://localhost:8000/hls/${selectedStreamer}/playlist.m3u8`
+    return `${axios.defaults.baseURL}/hls/${selectedStreamer}/playlist.m3u8`
   }
 
   useEffect(() => {
