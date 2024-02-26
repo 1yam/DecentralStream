@@ -3,3 +3,4 @@ fastapi
 aleph-sdk-python
 python-multipart
 PyJWT
+python-dotenv

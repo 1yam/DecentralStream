@@ -14,6 +14,9 @@ from fastapi.responses import JSONResponse, StreamingResponse, Response
 
 import jwt
 
+from dotenv import load_dotenv
+load_dotenv()
+
 app = FastAPI()
 
 origins = ["*"]
@@ -44,7 +47,6 @@ async def download_video(hash):
 
     async with AuthenticatedAlephHttpClient(account=account, api_server=settings.API_HOST) as session:
         file_content = await session.download_file(hash)
-        print(file_content)
         file_path = f"{hash}.mp4"  # Naming the file with the hash
         with open(file_path, "wb") as f:
             f.write(file_content)
@@ -109,7 +111,7 @@ async def store_hls_segment(segment: UploadFile, stream_key: str):
         return Response(status_code=400)
 
     try:
-        data = jwt.decode(stream_key, "secret", algorithms=["HS256"])
+        data = jwt.decode(stream_key, os.getenv('JWT_SECRET'), algorithms=["HS256"])
     except Exception as e:
         return Response(status_code=400, content=str(e))
 
@@ -172,7 +174,7 @@ async def start_stream(stream_key: str):
         return Response(status_code=400)
 
     try:
-        data = jwt.decode(stream_key, "secret", algorithms=["HS256"])
+        data = jwt.decode(stream_key, os.getenv('JWT_SECRET'), algorithms=["HS256"])
     except Exception as e:
         return Response(status_code=400, content=str(e))
 
@@ -195,7 +197,7 @@ async def stop_stream(stream_key: str):
         return Response(status_code=400)
 
     try:
-        data = jwt.decode(stream_key, "secret", algorithms=["HS256"])
+        data = jwt.decode(stream_key, os.getenv('JWT_SECRET'), algorithms=["HS256"])
     except Exception as e:
         return Response(status_code=400, content=str(e))
 
@@ -234,7 +236,7 @@ async def generate_stream_key(account: str):
         "account": account,
     }
 
-    stream_key = jwt.encode(data, "secret", algorithm="HS256")
+    stream_key = jwt.encode(data, os.getenv('JWT_SECRET'), algorithm="HS256")
 
     return Response(content=stream_key, media_type="application/json")
 
@@ -242,7 +244,7 @@ async def generate_stream_key(account: str):
 @app.get("/accounts/verfify-stream-key")
 async def verify_stream_key(stream_key: str):
     try:
-        jwt.decode(stream_key, "secret", algorithms=["HS256"])
+        jwt.decode(stream_key, os.getenv('JWT_SECRET'), algorithms=["HS256"])
     except Exception as e:
         return Response(status_code=400, content=str(e))
 

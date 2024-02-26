@@ -21,6 +21,8 @@ services:
     restart: always
     ports:
       - 8000:8000
+    environment:
+      JWT_SECRET: YOUR_JWT_SECRET
     networks:
       - backend
 

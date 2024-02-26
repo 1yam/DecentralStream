@@ -2,3 +2,5 @@ venv
 
 streams/*
 !streams/.gitkeep
+
+.env
