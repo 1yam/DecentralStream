@@ -32,4 +32,7 @@ Python 3.11:
 - pyrtmp===0.3.0 (pip install pyrtmp)
 - aiohttp===3.9.3 (pip install aiohttp)
 
+[![Voir la vidéo]()](https://cdn.discordapp.com/attachments/1208197626864865341/1212085440450920448/2024-02-27_18-12-28.mp4?ex=660c3d08&is=65f9c808&hm=d960f71d147865faa09461738b360cc38e5a1c1be469905b3623b4ac6d397ae3&)
+
+
   
